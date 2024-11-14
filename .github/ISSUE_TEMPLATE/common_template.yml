@@ -1,0 +1,49 @@
+name: "Migrate Org and repo-Level Action Secrets, Variables, Dependabot Secrets, Environments and Rulesets"
+description: "Provide the source and target organization details for the migration."
+title: "Migrate Data Items from Source to Target"
+labels:
+  - migration
+  - automation
+
+body:
+  - type: input
+    id: source_org
+    attributes:
+      label: "Source Organization"
+      description: "Enter the name of the source organization"
+      placeholder: "e.g., sam-org1"
+    validations:
+      required: true
+
+  - type: input
+    id: source_repo
+    attributes:
+      label: "Source Repository"
+      description: "Enter the name of the source Repository"
+      placeholder: "e.g., s_repo1"
+
+  - type: input
+    id: target_org
+    attributes:
+      label: "Target Organization"
+      description: "Enter the name of the target organization"
+      placeholder: "e.g., sam-org2"
+    validations:
+      required: true
+
+  - type: input
+    id: target_repo
+    attributes:
+      label: "Target Repository"
+      description: "Enter the name of the target Repository"
+      placeholder: "e.g., s_repo1"
+
+  - type: dropdown
+    id: migration_level
+    attributes:
+      label: "Migration Level"
+      description: "Select if this migration is for organization-level secrets
+                  Note: if you are using the organization level all the repositories under the or will alos be covered."
+      options:
+        - "Organization"
+        - "Repository"
