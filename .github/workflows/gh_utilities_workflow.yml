@@ -153,6 +153,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
 
+        
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      - name: Set up PowerShell
+        uses: actions/setup-python@v4
+
+      - name: Validate PAT tokens
+        run: |
+          if [[ -z "${{ secrets.SOURCE_TOKEN }}" ]]; then
+            echo "Source Token is missing!"
+            exit 1
+          fi
+          if [[ -z "${{ secrets.TARGET_TOKEN }}" ]]; then
+            echo "Target Token is missing!"
+            exit 1
+          fi
+        shell: bash
+
       - name: Get Issue Body
         id: issue_body
         uses: actions/github-script@v6
@@ -173,6 +192,8 @@ jobs:
             core.setOutput("source_repo", sourceRepo);
             core.setOutput("target_org", targetOrg);
             core.setOutput("target_repo", targetRepo);
+
+# Secrets level migration 
 
       - name: Export Dependabot Secrets (Repo-Level)
         run: |
@@ -263,4 +284,115 @@ jobs:
           
         env:
           GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
-      
+
+      - name: Print Variables
+        run: |
+          echo "Source Organization: ${{ steps.issue_body.outputs.source_org }}"
+          echo "Source Repository: ${{ steps.issue_body.outputs.source_repo }}"
+          echo "Target Organization: ${{ steps.issue_body.outputs.target_org }}"
+          echo "Target Repository: ${{ steps.issue_body.outputs.target_repo }}"
+
+      - name: Run the PowerShell migration script
+        run: |
+          pwsh ./scripts/migrate_secret_states.ps1 -sourceOrg "${{ steps.issue_body.outputs.source_org }}" -sourceRepo "${{ steps.issue_body.outputs.source_repo }}" -targetOrg "${{ steps.issue_body.outputs.target_org }}" -targetRepo "${{ steps.issue_body.outputs.target_repo }}" -sourceToken "${{ secrets.SOURCE_TOKEN }}" -targetToken "${{ secrets.TARGET_TOKEN }}"
+        shell: pwsh
+
+      # Branch protection
+
+      - name: Run Branch Protection Migration
+        shell: pwsh
+        env:
+          SOURCE_ORG: "${{ steps.issue_body.outputs.source_org }}"
+          SOURCE_REPO: "${{ steps.issue_body.outputs.source_repo }}"
+          TARGET_ORG: "${{ steps.issue_body.outputs.target_org }}"
+          TARGET_REPO: "${{ steps.issue_body.outputs.target_repo }}"
+          SOURCE_TOKEN: "${{ secrets.SOURCE_TOKEN }}"
+          TARGET_TOKEN: "${{ secrets.TARGET_TOKEN }}"
+        run: |
+          # Define PowerShell variables from environment variables
+          $sourceOrg = '${{ env.SOURCE_ORG }}'
+          $sourceRepo = '${{ env.SOURCE_REPO }}'
+          $targetOrg = '${{ env.TARGET_ORG }}'
+          $targetRepo = '${{ env.TARGET_REPO }}'
+          $sourceToken = '${{ env.SOURCE_TOKEN }}'
+          $targetToken = '${{ env.TARGET_TOKEN }}'
+
+          # PowerShell script to migrate branch protection rules
+          $sourceHeaders = @{
+              'Accept' = 'application/vnd.github+json'
+              'Authorization' = 'token ' + $sourceToken
+              'Content-Type' = 'application/json'
+          }
+
+          $targetHeaders = @{
+              'Accept' = 'application/vnd.github+json'
+              'Authorization' = 'token ' + $targetToken
+              'Content-Type' = 'application/json'
+          }
+
+          # Get all branches from the source repository
+          $allBranches = (Invoke-RestMethod -Uri "https://api.github.com/repos/$sourceOrg/$sourceRepo/branches" -Headers $sourceHeaders).name
+          Write-Output "All branches in source repository: $($allBranches -join ', ')"
+
+          $protectedBranches = @()
+
+          # Identify protected branches
+          foreach ($branch in $allBranches) {
+              Write-Output "Checking protection status for branch: $branch"
+              try {
+                  $sourceProtectionUri = "https://api.github.com/repos/$sourceOrg/$sourceRepo/branches/$branch/protection"
+                  $sourceProtection = Invoke-RestMethod -Uri $sourceProtectionUri -Headers $sourceHeaders -Method Get
+                  $protectedBranches += $branch
+                  Write-Output "Branch $branch is protected."
+              } catch {
+                  Write-Output "Branch $branch is not protected or an error occurred."
+              }
+          }
+
+          Write-Output "Protected branches: $($protectedBranches -join ', ')"
+
+          # Migrate protection rules for protected branches
+          foreach ($branch in $protectedBranches) {
+              Write-Output "Migrating protection rules for branch: $branch"
+              $sourceProtectionUri = "https://api.github.com/repos/$sourceOrg/$sourceRepo/branches/$branch/protection"
+              $sourceProtection = Invoke-RestMethod -Uri $sourceProtectionUri -Headers $sourceHeaders -Method Get
+
+              $body = @{
+                  required_status_checks = if ($sourceProtection.required_status_checks) {
+                      @{
+                          strict = $sourceProtection.required_status_checks.strict
+                          contexts = $sourceProtection.required_status_checks.contexts
+                      }
+                  } else { $null }
+                  required_pull_request_reviews = if ($sourceProtection.required_pull_request_reviews) {
+                      @{
+                          dismiss_stale_reviews = $sourceProtection.required_pull_request_reviews.dismiss_stale_reviews
+                          require_code_owner_reviews = $sourceProtection.required_pull_request_reviews.require_code_owner_reviews
+                          require_last_push_approval = $sourceProtection.required_pull_request_reviews.require_last_push_approval
+                          required_approving_review_count = $sourceProtection.required_pull_request_reviews.required_approving_review_count
+                      }
+                  } else { $null }
+                  required_signatures = if ($sourceProtection.required_signatures) { $sourceProtection.required_signatures.enabled } else { $false }
+                  enforce_admins = $sourceProtection.enforce_admins.enabled
+                  required_linear_history = if ($sourceProtection.required_linear_history) { $sourceProtection.required_linear_history.enabled } else { $false }
+                  allow_force_pushes = if ($sourceProtection.allow_force_pushes) { $sourceProtection.allow_force_pushes.enabled } else { $false }
+                  allow_deletions = if ($sourceProtection.allow_deletions) { $sourceProtection.allow_deletions.enabled } else { $false }
+                  block_creations = if ($sourceProtection.block_creations) { $sourceProtection.block_creations.enabled } else { $false }
+                  required_conversation_resolution = if ($sourceProtection.required_conversation_resolution) { $sourceProtection.required_conversation_resolution.enabled } else { $false }
+                  lock_branch = if ($sourceProtection.lock_branch) { $sourceProtection.lock_branch.enabled } else { $false }
+                  allow_fork_syncing = if ($sourceProtection.allow_fork_syncing) { $sourceProtection.allow_fork_syncing.enabled } else { $false }
+                  restrictions = if ($sourceProtection.restrictions) {
+                      @{
+                          users = $sourceProtection.restrictions.users
+                          teams = $sourceProtection.restrictions.teams
+                          apps = $sourceProtection.restrictions.apps
+                      }
+                  } else { $null }
+              } | ConvertTo-Json -Depth 10
+
+              $targetProtectionUri = "https://api.github.com/repos/$targetOrg/$targetRepo/branches/$branch/protection"
+              Invoke-RestMethod -Uri $targetProtectionUri -Headers $targetHeaders -Method Put -Body $body
+
+              Write-Output "Branch protection rules applied to $branch in target repository."
+          }
+        
