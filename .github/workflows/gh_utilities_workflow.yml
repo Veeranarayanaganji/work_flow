@@ -235,41 +235,41 @@ jobs:
 
           
 # Environment level migration 
-      - name: Export env details from an org's Repo
-        run: |
-          gh environments list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} -o source-env-report.csv -t ${{ secrets.SOURCE_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+      # - name: Export env details from an org's Repo
+      #   run: |
+      #     gh environments list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} -o source-env-report.csv -t ${{ secrets.SOURCE_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
 
-      - name: Create env's in target repo
-        run: |
-          gh environments create ${{ steps.issue_body.outputs.target_org }} -f source-env-report.csv --token ${{ secrets.TARGET_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
+      # - name: Create env's in target repo
+      #   run: |
+      #     gh environments create ${{ steps.issue_body.outputs.target_org }} -f source-env-report.csv --token ${{ secrets.TARGET_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
 
-      - name: Export environment Secrets from a source Repo
-        run: |
-          gh environments secrets list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} -o source-env-secrets.csv --token ${{ secrets.SOURCE_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
+      # - name: Export environment Secrets from a source Repo
+      #   run: |
+      #     gh environments secrets list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} -o source-env-secrets.csv --token ${{ secrets.SOURCE_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
 
-      - name: Create environments Secrets in a target Repo
-        run: |
-          gh environments secrets create ${{ steps.issue_body.outputs.target_org }} -f source-env-secrets.csv --token ${{ secrets.TARGET_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
+      # - name: Create environments Secrets in a target Repo
+      #   run: |
+      #     gh environments secrets create ${{ steps.issue_body.outputs.target_org }} -f source-env-secrets.csv --token ${{ secrets.TARGET_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
           
-      - name: Export env variables from a Repo
-        run: |
-          gh environments variables list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} --output-file source-env-variables.csv --token ${{ secrets.SOURCE_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
+      # - name: Export env variables from a Repo
+      #   run: |
+      #     gh environments variables list ${{ steps.issue_body.outputs.source_org }} ${{ steps.issue_body.outputs.source_repo }} --output-file source-env-variables.csv --token ${{ secrets.SOURCE_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
 
-      - name: Create env variables in a target Repo
-        run: |
-          gh environments variables create ${{ steps.issue_body.outputs.target_org }} --from-file source-env-variables.csv --token ${{ secrets.TARGET_TOKEN }}
-        env:
-          GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
+      # - name: Create env variables in a target Repo
+      #   run: |
+      #     gh environments variables create ${{ steps.issue_body.outputs.target_org }} --from-file source-env-variables.csv --token ${{ secrets.TARGET_TOKEN }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.TARGET_TOKEN }}
       
 
 # RuleSet migration
