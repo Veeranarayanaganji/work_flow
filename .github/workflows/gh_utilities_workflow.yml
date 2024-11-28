@@ -20,6 +20,7 @@ jobs:
             const migrationLevel = migrationLevelMatch ? migrationLevelMatch[1].trim() : "organization"; // default to organization
             console.log("Migration Level: ", migrationLevel);
             core.setOutput("migration_level", migrationLevel);
+
       - name: Validate PAT tokens
         run: |
           if [[ -z "${{ secrets.SOURCE_TOKEN }}" ]]; then
@@ -144,16 +145,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Install gh-seva extension
-        run: gh extension install MGMResorts/gh-seva
+        run: gh extension install gh-seva
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}
 
       - name: Install gh-migrate-rulesets extension
-        run: gh extension install MGMResorts/gh-migrate-rulesets
+        run: gh extension install gh-migrate-rulesets
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
 
-        
       - name: Checkout the repository
         uses: actions/checkout@v3
 
