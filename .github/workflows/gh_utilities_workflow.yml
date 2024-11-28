@@ -150,6 +150,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}
          
+      - name: Install gh-seva extension
+        run: gh extension install katiem0/gh-environments
+        env:
+          GH_TOKEN: ${{ secrets.CLI_TOKEN }}
 
       - name: Install gh-migrate-rulesets extension
         run: gh extension install katiem0/gh-migrate-rulesets
