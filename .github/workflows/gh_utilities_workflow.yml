@@ -296,7 +296,7 @@ jobs:
 
       - name: Run the PowerShell migration script
         run: |
-          pwsh ./scripts/migrate_secret_states.ps1 -sourceOrg "${{ steps.issue_body.outputs.source_org }}" -sourceRepo "${{ steps.issue_body.outputs.source_repo }}" -targetOrg "${{ steps.issue_body.outputs.target_org }}" -targetRepo "${{ steps.issue_body.outputs.target_repo }}" -sourceToken "${{ secrets.SOURCE_TOKEN }}" -targetToken "${{ secrets.TARGET_TOKEN }}"
+          pwsh .\scripts\migrate_secret_states.ps1 -sourceOrg "${{ steps.issue_body.outputs.source_org }}" -sourceRepo "${{ steps.issue_body.outputs.source_repo }}" -targetOrg "${{ steps.issue_body.outputs.target_org }}" -targetRepo "${{ steps.issue_body.outputs.target_repo }}" -sourceToken "${{ secrets.SOURCE_TOKEN }}" -targetToken "${{ secrets.TARGET_TOKEN }}"
         shell: pwsh
 
       # Branch protection
