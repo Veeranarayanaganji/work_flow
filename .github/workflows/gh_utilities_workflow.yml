@@ -47,12 +47,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
         env:
-          GH_TOKEN: ${{ github.token }}  # Use GitHub-provided token for initial setup
+        #  GH_TOKEN: ${{ github.token }}  # Use GitHub-provided token for initial setup
+          GH_TOKEN: ${{ secrets.SOURCE_TOKEN }} 
 
       - name: Install gh-seva extension
-        run: gh extension install MGMResorts/gh-seva
+        run: gh extension install gh-seva
         env:
-          GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
+         # GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
+         GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
 
 
       - name: Get Issue Body
@@ -142,17 +144,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
         env:
-          GH_TOKEN: ${{ github.token }}
+         # GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
 
       - name: Install gh-seva extension
         run: gh extension install gh-seva
         env:
-          GH_TOKEN: ${{ secrets.CLI_TOKEN }}
+         # GH_TOKEN: ${{ secrets.CLI_TOKEN }}
+         GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
 
       - name: Install gh-migrate-rulesets extension
         run: gh extension install gh-migrate-rulesets
         env:
-          GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
+         # GH_TOKEN: ${{ secrets.CLI_TOKEN }}  # Add token here as well for installation
+         GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
 
       - name: Checkout the repository
         uses: actions/checkout@v3
