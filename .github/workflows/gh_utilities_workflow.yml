@@ -150,7 +150,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}
          
-      - name: Install gh-seva extension
+      - name: Install gh-env extension
         run: gh extension install katiem0/gh-environments
         env:
           GH_TOKEN: ${{ secrets.CLI_TOKEN }}
